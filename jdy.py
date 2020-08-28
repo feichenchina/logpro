@@ -182,10 +182,10 @@ if __name__ == '__main__':
     # start_date：间隔触发的起始时间。
     # end_date：间隔触发的结束时间。
     # jitter：触发的时间误差。
-    scheduler.add_job(job, 'interval', seconds=10)
+    # scheduler.add_job(job, 'interval', seconds=10)
 
     # 每天 16:46 分执行一次
-    # scheduler.add_job(job, 'cron', day_of_week='0-6', hour=14, minute=00)
+    scheduler.add_job(job, 'cron', day_of_week='0-6', hour=14, minute=00)
     # myjob = schedule.every(2).seconds
     # myjob.job_func = job
     # schedule.jobs.append(job)
