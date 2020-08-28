@@ -9,6 +9,8 @@
 # @function: 
 '''
 import datetime
+
+import oss2 as oss2
 import requests
 import time
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -17,8 +19,17 @@ import win32con
 import json
 # dingding = 'https://oapi.dingtalk.com/robot/send?access_token=596970b8d299f68c81efd0a2193ef14ada8beb74b631c57facb8dc3c15dd16b5'
 dingding = 'https://oapi.dingtalk.com/robot/send?access_token=5c9f62f242132a8ddeafe3b46c7e364f55615388a9e6cc30f5a0dcf263538a3c'
+
+def get_date():
+    # 获取当前时间
+    t = datetime.datetime.now()
+    # 获取当前日期的字符串格式
+    t1 = t.strftime('%Y%m%d')
+    return t1
+
 # 发送消息
 def sendMessage(text, tels):
+
     data = {
         "msgtype": "text",
         "text": {
@@ -31,16 +42,26 @@ def sendMessage(text, tels):
     res = requests.post(dingding, headers={'Content-Type': 'application/json; charset=utf-8'}, data=json.dumps(data))
     print(res.text)
 
-def sendttjj():
 
+def sendttjj():
+    date = get_date()
+    print(date)
+    file_dir = rf'G:\code\python\logpro\img\{date}'
+    file_list = file_name(file_dir)[0]
+    print(file_list)
+    text = "发送:#### @13782113850\n"
+    for file in file_list:
+
+        filename = str(file).split('_')[0] if str(file).split('_')[0] else '未知'
+        url = rf"http://suny.utools.club/{date}/{file}"
+        print(url)
+        text = text + f"> ![screenshot]({url})\n{filename}\n"
+    print(text)
     data = {
         "msgtype": "markdown",
         "markdown": {
-            "title": "杭州天气",
-            "text": "发送:#### 杭州天气 @156xxxx8827\n" +
-                    "> 9度，西北风1级，空气良89，相对温度73%\n\n" +
-                    "> ![screenshot](https://gw.alicdn.com/tfs/TB1ut3xxbsrBKNjSZFpXXcXhFXa-846-786.png)\n" +
-                    "> ###### 10点20分发布 [天气](http://www.thinkpage.cn/) \n"
+            "title": f"天天",
+            "text": text
         },
         "at": {
             "atMobiles": [
@@ -148,30 +169,6 @@ def job():
         sendMessage(f'每日填报填写出现异常情况，请处理\n{res}', tels)
         # win32api.MessageBox(0, f"填写失败\n{res}", "每日填报", win32con.MB_OK)
 
-
-# def setText(aString):
-#     """设置剪贴板文本"""
-#     w.OpenClipboard()
-#     w.EmptyClipboard()
-#     w.SetClipboardData(win32con.CF_UNICODETEXT, aString)
-#     w.CloseClipboard()
-#
-# def send_qq(to_who, msg):
-#     """发送qq消息
-#     to_who：qq消息接收人
-#     msg：需要发送的消息
-#     """
-#     # 将消息写到剪贴板
-#     setText(msg)
-#     # 获取qq窗口句柄
-#     qq = win32gui.FindWindow(None, to_who)
-#     # 投递剪贴板消息到QQ窗体
-#     win32gui.SendMessage(qq, 258, 22, 2080193)
-#     win32gui.SendMessage(qq, 770, 0, 0)
-#     # 模拟按下回车键
-#     win32gui.SendMessage(qq, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0)
-#     win32gui.SendMessage(qq, win32con.WM_KEYUP, win32con.VK_RETURN, 0)
-
 def get_stamp():
     # 获取当前时间
     t = datetime.datetime.now()
@@ -186,14 +183,50 @@ def get_stamp():
     print(stamp)
     return t1,stamp
 
+def run_jdy(scheduler):
+    '''
+    将每日填报添加到定时任务中
+    :return:
+    '''
+    # 每天 16:46 分执行一次
+    scheduler.add_job(job, 'cron', day_of_week='0-6', hour=14, minute=00)
 
+
+def run_ttjj(scheduler):
+    '''
+    将向钉钉发送本地图片添加到定时任务
+    :return:
+    '''
+    scheduler.add_job(sendttjj, 'interval', seconds=10)
+
+def create_task():
+    # BlockingScheduler：在进程中运行单个任务，调度器是唯一运行的东西
+    scheduler = BlockingScheduler()
+    # 开启每日填报任务
+    # run_jdy(scheduler)
+    # 开启天天基金任务
+    run_ttjj(scheduler)
+    # 开启定时任务
+    scheduler.start()
+
+import os
+def file_name(file_dir):
+    '''
+    返回指定目录下的所有文件列表
+    :param file_dir:
+    :return:
+    '''
+    file_list = []
+    for root, dirs, files in os.walk(file_dir):
+        # print('root_dir:', root)  #             当前目录路径
+        # print('sub_dirs:', dirs)  #             当前路径下所有子目录
+        # print('files:', files)  #           当前路径下所有非目录子文件
+        file_list.append(files)
+    return file_list
 
 
 if __name__ == '__main__':
     # job()
-    # BlockingScheduler：在进程中运行单个任务，调度器是唯一运行的东西
-    scheduler = BlockingScheduler()
-
     # 采用阻塞的方式
     # 采用date的方式，在特定时间只执行一次
     # 采用 interval 的方式，每过 1 分钟执行一次
@@ -205,15 +238,14 @@ if __name__ == '__main__':
     # start_date：间隔触发的起始时间。
     # end_date：间隔触发的结束时间。
     # jitter：触发的时间误差。
-    scheduler.add_job(sendttjj, 'interval', seconds=10)
 
-    # 每天 16:46 分执行一次
-    scheduler.add_job(job, 'cron', day_of_week='0-6', hour=14, minute=00)
+
+
     # myjob = schedule.every(2).seconds
     # myjob.job_func = job
     # schedule.jobs.append(job)
     # result = myjob.run()
     # print(result)
-    # 开启定时任务
-    scheduler.start()
+    create_task()
+
 
