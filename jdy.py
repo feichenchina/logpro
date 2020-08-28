@@ -14,21 +14,22 @@ import time
 from apscheduler.schedulers.blocking import BlockingScheduler
 import win32api
 import win32con
-
+import json
 # dingding = 'https://oapi.dingtalk.com/robot/send?access_token=596970b8d299f68c81efd0a2193ef14ada8beb74b631c57facb8dc3c15dd16b5'
+dingding = 'https://oapi.dingtalk.com/robot/send?access_token=5c9f62f242132a8ddeafe3b46c7e364f55615388a9e6cc30f5a0dcf263538a3c'
 # 发送消息
-# def sendMessage(text, tels):
-#     data = {
-#         "msgtype": "text",
-#         "text": {
-#                 "content": "已填报:" + text
-#         },
-#         "at": {
-#             "atMobiles": tels
-#         }
-#     }
-#     res = requests.post(dingding, headers={'Content-Type': 'application/json; charset=utf-8'}, data=json.dumps(data))
-#     print(res.text)
+def sendMessage(text, tels):
+    data = {
+        "msgtype": "text",
+        "text": {
+                "content": "发送:" + text
+        },
+        "at": {
+            "atMobiles": tels
+        }
+    }
+    res = requests.post(dingding, headers={'Content-Type': 'application/json; charset=utf-8'}, data=json.dumps(data))
+    print(res.text)
 
 def run(url):
     '''
@@ -118,10 +119,13 @@ def job():
     # print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
     # print(res)
     # 弹框提醒是否填写成功
+    tels = ['13782113850']
     if res == 200:
-        win32api.MessageBox(0, "已成功填写", "每日填报", win32con.MB_OK)
+        sendMessage('每日填报已成功填写', tels)
+        # win32api.MessageBox(0, "已成功填写", "每日填报", win32con.MB_OK)
     else:
-        win32api.MessageBox(0, f"填写失败\n{res}", "每日填报", win32con.MB_OK)
+        sendMessage(f'每日填报填写出现异常情况，请处理\n{res}', tels)
+        # win32api.MessageBox(0, f"填写失败\n{res}", "每日填报", win32con.MB_OK)
 
 
 # def setText(aString):
@@ -178,10 +182,10 @@ if __name__ == '__main__':
     # start_date：间隔触发的起始时间。
     # end_date：间隔触发的结束时间。
     # jitter：触发的时间误差。
-    # scheduler.add_job(job, 'interval', seconds=5)
+    scheduler.add_job(job, 'interval', seconds=10)
 
     # 每天 16:46 分执行一次
-    scheduler.add_job(job, 'cron', day_of_week='0-6', hour=14, minute=00)
+    # scheduler.add_job(job, 'cron', day_of_week='0-6', hour=14, minute=00)
     # myjob = schedule.every(2).seconds
     # myjob.job_func = job
     # schedule.jobs.append(job)
@@ -189,3 +193,4 @@ if __name__ == '__main__':
     # print(result)
     # 开启定时任务
     scheduler.start()
+
