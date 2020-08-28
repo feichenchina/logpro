@@ -31,6 +31,27 @@ def sendMessage(text, tels):
     res = requests.post(dingding, headers={'Content-Type': 'application/json; charset=utf-8'}, data=json.dumps(data))
     print(res.text)
 
+def sendttjj():
+
+    data = {
+        "msgtype": "markdown",
+        "markdown": {
+            "title": "杭州天气",
+            "text": "发送:#### 杭州天气 @156xxxx8827\n" +
+                    "> 9度，西北风1级，空气良89，相对温度73%\n\n" +
+                    "> ![screenshot](https://gw.alicdn.com/tfs/TB1ut3xxbsrBKNjSZFpXXcXhFXa-846-786.png)\n" +
+                    "> ###### 10点20分发布 [天气](http://www.thinkpage.cn/) \n"
+        },
+        "at": {
+            "atMobiles": [
+                13782113850,
+            ],
+
+        }
+    }
+    res = requests.post(dingding, headers={'Content-Type': 'application/json; charset=utf-8'}, data=json.dumps(data))
+    print(res.text)
+
 def run(url):
     '''
     请求表单并填充信息
@@ -166,6 +187,8 @@ def get_stamp():
     return t1,stamp
 
 
+
+
 if __name__ == '__main__':
     # job()
     # BlockingScheduler：在进程中运行单个任务，调度器是唯一运行的东西
@@ -182,7 +205,7 @@ if __name__ == '__main__':
     # start_date：间隔触发的起始时间。
     # end_date：间隔触发的结束时间。
     # jitter：触发的时间误差。
-    # scheduler.add_job(job, 'interval', seconds=10)
+    scheduler.add_job(sendttjj, 'interval', seconds=10)
 
     # 每天 16:46 分执行一次
     scheduler.add_job(job, 'cron', day_of_week='0-6', hour=14, minute=00)
