@@ -1,0 +1,9 @@
+    <service>
+      <id>Tb</id>
+      <name>Daily report</name>
+      <description>This service runs Daily report server integration system.</description>
+      <executable>F:\Anaconda\envs\logpro\python.exe</executable>
+      <arguments>jdy.py</arguments>
+      <logmode>rotate</logmode>
+      <logpath>G:\code\python\logs\daily_report</logpath>
+    </service>
